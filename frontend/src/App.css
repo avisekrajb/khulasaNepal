@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.no-ellipsis {
+  display: -webkit-box;
+ 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: clip; 
+}

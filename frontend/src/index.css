@@ -1,0 +1,843 @@
+@import "tailwindcss";
+
+/* ============================================
+   DARK MODE VARIABLES
+   ============================================ */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-input: #f9fafb;
+  --bg-navbar: #1e3a5f;
+  --bg-navbar-end: #0f1a2e;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-color-heavy: rgba(0, 0, 0, 0.15);
+  --hover-bg: #f3f4f6;
+  --body-bg: #ffffff;
+  --body-text: #111827;
+  --main-bg: #f3f4f6;
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #60a5fa;
+}
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-input: #334155;
+  --bg-navbar: #0f172a;
+  --bg-navbar-end: #020617;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-light: #1e293b;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --shadow-color-heavy: rgba(0, 0, 0, 0.6);
+  --hover-bg: #334155;
+  --body-bg: #0f172a;
+  --body-text: #ffffff;
+  --main-bg: #1e293b;
+  --accent-blue: #60a5fa;
+  --accent-blue-hover: #93c5fd;
+}
+
+/* ============================================
+   BASE STYLES - OPTIMIZED (NO UNIVERSAL TRANSITIONS)
+   ============================================ */
+html {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+  transition: background-color 0.15s ease, color 0.15s ease;
+  /* Remove scrollbar completely */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  background: transparent;
+}
+
+/* Also hide for body to be safe */
+body {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+  min-height: 100vh;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  background: transparent;
+}
+
+#root {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+  min-height: 100vh;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Only animate specific elements that need it */
+.navbar,
+.card,
+.sidebar,
+footer,
+header,
+main,
+input,
+textarea,
+select,
+button {
+  transition: background-color 0.15s ease,
+              color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+/* ============================================
+   FIX: Border colors in dark mode
+   ============================================ */
+.dark .border,
+.dark .border-t,
+.dark .border-b,
+.dark .border-l,
+.dark .border-r,
+.dark .border-x,
+.dark .border-y {
+  border-color: var(--border-color);
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400,
+.dark .border-gray-50 {
+  border-color: var(--border-color);
+}
+
+.dark .divide-gray-100,
+.dark .divide-gray-200,
+.dark .divide-gray-300 {
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   FIX: Background colors in dark mode
+   ============================================ */
+.dark .bg-white {
+  background-color: var(--bg-card);
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary);
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--bg-secondary);
+}
+
+.dark .bg-gray-200 {
+  background-color: var(--border-color);
+}
+
+.dark .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .bg-black\/5 {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   FIX: Text colors in dark mode - ALL WHITE
+   ============================================ */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300,
+.dark .text-gray-200,
+.dark .text-gray-100 {
+  color: #ffffff;
+}
+
+.dark .text-black {
+  color: #ffffff;
+}
+
+.dark .text-white {
+  color: #ffffff;
+}
+
+/* ============================================
+   FIX: FOOTER TEXT COLORS IN DARK MODE - ALL WHITE
+   ============================================ */
+.dark footer,
+.dark .footer,
+.dark footer .text-gray-900,
+.dark footer .text-gray-800,
+.dark footer .text-gray-700,
+.dark footer .text-gray-600,
+.dark footer .text-gray-500,
+.dark footer .text-gray-400,
+.dark footer .text-gray-300,
+.dark footer .text-gray-200,
+.dark footer .text-gray-100,
+.dark .footer .text-gray-900,
+.dark .footer .text-gray-800,
+.dark .footer .text-gray-700,
+.dark .footer .text-gray-600,
+.dark .footer .text-gray-500,
+.dark .footer .text-gray-400,
+.dark .footer .text-gray-300,
+.dark .footer .text-gray-200,
+.dark .footer .text-gray-100 {
+  color: #ffffff !important;
+}
+
+.dark footer a,
+.dark .footer a,
+.dark footer a:not(.no-dark),
+.dark .footer a:not(.no-dark) {
+  color: #ffffff !important;
+}
+
+.dark footer a:hover,
+.dark .footer a:hover {
+  color: #93c5fd !important;
+}
+
+/* Footer specific background */
+.dark footer .bg-gray-50,
+.dark .footer .bg-gray-50,
+.dark footer .bg-gray-100,
+.dark .footer .bg-gray-100 {
+  background-color: var(--bg-secondary);
+}
+
+.dark footer .border-gray-200,
+.dark .footer .border-gray-200 {
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   FIX: Color-tinted backgrounds in dark mode
+   (bg-*-50 / bg-*-100 chips, alerts, badges)
+   ============================================ */
+.dark .bg-blue-50,
+.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.15); }
+.dark .bg-green-50,
+.dark .bg-green-100,
+.dark .bg-emerald-50,
+.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.15); }
+.dark .bg-red-50,
+.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.15); }
+.dark .bg-purple-50,
+.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.15); }
+.dark .bg-pink-50,
+.dark .bg-pink-100 { background-color: rgba(236, 72, 153, 0.15); }
+.dark .bg-orange-50,
+.dark .bg-orange-100,
+.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.15); }
+.dark .bg-teal-50,
+.dark .bg-teal-100 { background-color: rgba(20, 184, 166, 0.15); }
+.dark .bg-indigo-50,
+.dark .bg-indigo-100 { background-color: rgba(99, 102, 241, 0.15); }
+.dark .bg-cyan-50,
+.dark .bg-cyan-100 { background-color: rgba(6, 182, 212, 0.15); }
+.dark .bg-slate-50,
+.dark .bg-slate-100 { background-color: rgba(100, 116, 139, 0.15); }
+.dark .bg-yellow-50,
+.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.15); }
+
+/* Tinted border colors */
+.dark .border-blue-100,
+.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.35); }
+.dark .border-green-100,
+.dark .border-green-200,
+.dark .border-emerald-100,
+.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.35); }
+.dark .border-red-100,
+.dark .border-red-200 { border-color: rgba(239, 68, 68, 0.35); }
+.dark .border-purple-100,
+.dark .border-purple-200 { border-color: rgba(168, 85, 247, 0.35); }
+.dark .border-pink-100,
+.dark .border-pink-200 { border-color: rgba(236, 72, 153, 0.35); }
+.dark .border-orange-100,
+.dark .border-orange-200,
+.dark .border-amber-100,
+.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.35); }
+.dark .border-teal-100,
+.dark .border-teal-200 { border-color: rgba(20, 184, 166, 0.35); }
+.dark .border-indigo-100,
+.dark .border-indigo-200 { border-color: rgba(99, 102, 241, 0.35); }
+.dark .border-cyan-100,
+.dark .border-cyan-200 { border-color: rgba(6, 182, 212, 0.35); }
+
+/* Tinted text colors -> ALL WHITE */
+.dark .text-blue-600,
+.dark .text-blue-700,
+.dark .text-blue-800,
+.dark .text-green-600,
+.dark .text-green-700,
+.dark .text-green-800,
+.dark .text-emerald-600,
+.dark .text-emerald-700,
+.dark .text-red-600,
+.dark .text-red-700,
+.dark .text-red-800,
+.dark .text-purple-600,
+.dark .text-purple-700,
+.dark .text-purple-800,
+.dark .text-pink-600,
+.dark .text-pink-700,
+.dark .text-pink-800,
+.dark .text-orange-600,
+.dark .text-orange-700,
+.dark .text-amber-600,
+.dark .text-amber-700,
+.dark .text-teal-600,
+.dark .text-teal-700,
+.dark .text-indigo-600,
+.dark .text-indigo-700,
+.dark .text-cyan-600,
+.dark .text-cyan-700,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-blue-500,
+.dark .text-indigo-500,
+.dark .text-purple-500,
+.dark .text-green-500,
+.dark .text-red-500,
+.dark .text-teal-500,
+.dark .text-cyan-500 {
+  color: #ffffff;
+}
+
+/* ============================================
+   FIX: DARK MODE BUTTONS - REMOVE ONLY BLACK BACKGROUNDS (KEEP BLUE)
+   ============================================ */
+
+/* Remove black backgrounds from all bg-black variants in dark mode */
+.dark .bg-black {
+  background-color: transparent !important;
+}
+
+.dark .bg-black\/5 {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+.dark .bg-black\/10 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark .bg-black\/20 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .bg-black\/30 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .bg-black\/40 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .bg-black\/50 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.dark .bg-black\/70 {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.dark .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.dark .bg-black\/90 {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Keep blue backgrounds for primary buttons (nav buttons stay blue in dark mode) */
+.dark .btn-primary,
+.dark button.btn-primary {
+  background-color: var(--accent-blue) !important;
+  color: #ffffff !important;
+}
+
+.dark .btn-primary:hover,
+.dark button.btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+}
+
+/* Keep secondary button backgrounds */
+.dark .btn-secondary,
+.dark button.btn-secondary {
+  background-color: var(--bg-secondary) !important;
+  color: #ffffff !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark .btn-secondary:hover,
+.dark button.btn-secondary:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* ============================================
+   FIX: Shadow colors in dark mode
+   ============================================ */
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-md,
+.dark .shadow-sm {
+  box-shadow: 0 10px 15px -3px var(--shadow-color),
+              0 4px 6px -2px var(--shadow-color);
+}
+
+.dark .shadow-2xl {
+  box-shadow: 0 20px 25px -5px var(--shadow-color-heavy),
+              0 10px 10px -5px var(--shadow-color);
+}
+
+/* ============================================
+   FIX: Hover backgrounds in dark mode
+   ============================================ */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: var(--hover-bg);
+}
+
+.dark .hover\:bg-white\/10:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .hover\:bg-black\/5:hover,
+.dark .hover\:bg-black\/10:hover,
+.dark .hover\:bg-black\/20:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ============================================
+   INPUT FIELDS
+   ============================================ */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--bg-input);
+  color: #ffffff;
+  border-color: var(--border-color);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--accent-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.dark .bg-gradient-to-b.from-blue-900.to-blue-950 {
+  background: linear-gradient(to bottom, var(--bg-navbar), var(--bg-navbar-end));
+}
+
+.dark .bg-gradient-to-r.from-blue-950.via-blue-900.to-blue-950 {
+  background: linear-gradient(to right, var(--bg-navbar), var(--bg-navbar-end));
+}
+
+/* ============================================
+   CARDS & CONTAINERS
+   ============================================ */
+.dark .news-card,
+.dark .article-card,
+.dark .post-card,
+.dark .comment-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.dark .rounded-xl,
+.dark .rounded-2xl,
+.dark .rounded-lg {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* Keep gradient overlays (e.g. image text-overlays) transparent in dark mode
+   so they don't cover the underlying photos with a solid card background */
+.dark .rounded-xl.bg-gradient-to-t,
+.dark .rounded-xl.bg-gradient-to-b,
+.dark .rounded-xl.bg-gradient-to-r,
+.dark .rounded-xl.bg-gradient-to-l,
+.dark .rounded-2xl.bg-gradient-to-t,
+.dark .rounded-2xl.bg-gradient-to-b,
+.dark .rounded-2xl.bg-gradient-to-r,
+.dark .rounded-2xl.bg-gradient-to-l,
+.dark .rounded-lg.bg-gradient-to-t,
+.dark .rounded-lg.bg-gradient-to-b,
+.dark .rounded-lg.bg-gradient-to-r,
+.dark .rounded-lg.bg-gradient-to-l {
+  background-color: transparent;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.dark main {
+  background-color: var(--main-bg);
+}
+
+/* ============================================
+   PROSE (Article Content)
+   ============================================ */
+.dark .prose {
+  color: #ffffff;
+}
+
+.dark .prose p {
+  color: #e2e8f0;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4 {
+  color: #ffffff;
+}
+
+.dark .prose strong {
+  color: #ffffff;
+}
+
+.dark .prose blockquote {
+  border-left-color: var(--border-color);
+  color: #e2e8f0;
+}
+
+.dark .prose a {
+  color: var(--accent-blue);
+}
+
+.dark .prose a:hover {
+  color: var(--accent-blue-hover);
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+.dark a:not(.no-dark) {
+  color: #ffffff;
+}
+
+.dark a:hover:not(.no-dark) {
+  color: #93c5fd;
+}
+
+/* ============================================
+   COMMENT SYSTEM
+   ============================================ */
+.dark .comment-system .bg-white {
+  background-color: var(--bg-card);
+}
+
+.dark .comment-system .border-gray-200 {
+  border-color: var(--border-color);
+}
+
+.dark .comment-system .text-gray-700,
+.dark .comment-system .text-gray-800,
+.dark .comment-system .text-gray-600,
+.dark .comment-system .text-gray-500 {
+  color: #ffffff;
+}
+
+.dark .comment-system .bg-gray-50 {
+  background-color: var(--bg-secondary);
+}
+
+.dark .comment-system .hover\:bg-gray-50:hover {
+  background-color: var(--hover-bg);
+}
+
+.dark .comment-system .hover\:bg-white:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Comment input stays theme-aware even when focused */
+.dark .comment-system .comment-textarea,
+.dark .comment-system .comment-textarea:focus {
+  background-color: var(--bg-input);
+  color: #ffffff;
+}
+
+.dark .comment-system .comment-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Keep primary action buttons visible in dark mode */
+.dark .comment-system .bg-blue-500 {
+  background-color: #2563eb !important;
+}
+
+.dark .comment-system .bg-red-500 {
+  background-color: #dc2626 !important;
+}
+
+.dark .comment-system .bg-purple-500 {
+  background-color: #7c3aed !important;
+}
+
+.dark .comment-system .bg-gray-200 {
+  background-color: var(--border-color);
+}
+
+/* Type selector active tints */
+.dark .comment-system .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark .comment-system .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+.dark .comment-system .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Accent text stays readable on dark cards */
+.dark .comment-system .text-blue-600,
+.dark .comment-system .text-blue-500 {
+  color: #93c5fd !important;
+}
+
+.dark .comment-system .text-purple-600 {
+  color: #c4b5fd !important;
+}
+
+.dark .comment-system .text-red-600,
+.dark .comment-system .text-red-500 {
+  color: #fca5a5 !important;
+}
+
+.dark .comment-system .text-blue-200 {
+  color: rgba(147, 197, 253, 0.5);
+}
+
+/* Reply thread line + recording indicator visibility */
+.dark .comment-system .border-blue-400 {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.dark .comment-system .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
+.dark .comment-system .border-gray-100 {
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   SCROLLBAR - COMPLETELY HIDDEN
+   ============================================ */
+/* Hide scrollbar for all elements */
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* For any overflow containers that might show scrollbars */
+.overflow-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* ============================================
+   DROPDOWN MENUS
+   ============================================ */
+.dark .dropdown-menu {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  box-shadow: 0 20px 25px -5px var(--shadow-color-heavy);
+}
+
+.dark .dropdown-item {
+  color: #ffffff;
+}
+
+.dark .dropdown-item:hover {
+  background-color: var(--hover-bg);
+  color: #ffffff;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+.dark .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.dark .modal-content {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+.dark table {
+  background-color: var(--bg-card);
+}
+
+.dark table th {
+  background-color: var(--bg-secondary);
+  color: #ffffff;
+  border-color: var(--border-color);
+}
+
+.dark table td {
+  border-color: var(--border-color);
+  color: #ffffff;
+}
+
+.dark table tr:hover {
+  background-color: var(--hover-bg);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 640px) {
+  .dark .bg-white {
+    background-color: var(--bg-card);
+  }
+  
+  .dark .mobile-menu {
+    background-color: var(--bg-navbar);
+    border-color: var(--border-color);
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES FOR QUICK THEME SWITCHING
+   ============================================ */
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-theme-card {
+  background-color: var(--bg-card);
+}
+
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   GLOW EFFECTS (Optional - can be removed)
+   ============================================ */
+.dark .glow-purple {
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+}
+
+.dark .glow-blue {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+}
+
+.dark .glow-yellow {
+  box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
+}
+
+/* ============================================
+   LOADING ANIMATIONS (Optimized)
+   ============================================ */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
