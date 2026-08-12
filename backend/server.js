@@ -45,7 +45,7 @@ const { successResponse } = require('./src/utils/responseHandler');
 // ============================================
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://khulasanepal.onrender.com';
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 
 // ============================================
