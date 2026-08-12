@@ -9,12 +9,12 @@ const fs = require('fs');
 
 function setupMiddleware(app, options = {}) {
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://khulasanepal.onrender.com';
 
   // Allow ALL origins in development, and specific ones in production
   const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'];
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://khulasanepalbackend.onrender.com', 'http://localhost:3000', 'https://khulasanepal.onrender.com'];
 
   // ============================================
   // 1. TRUST PROXY
