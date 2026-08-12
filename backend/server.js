@@ -13,9 +13,9 @@ const Category = require('./src/models/Category');
 const Footer = require('./src/models/Footer');
 const Ad = require('./src/models/Ads');
 const Team = require('./src/models/Team');
-const Comment = require('./src/models/Comment'); // ADDED
-const AdminLog = require('./src/models/AdminLog'); // ADDED - audit logs
-const VisitLog = require('./src/models/VisitLog'); // ADDED - visit counter
+const Comment = require('./src/models/Comment');
+const AdminLog = require('./src/models/AdminLog');
+const VisitLog = require('./src/models/VisitLog');
 
 // ============================================
 // IMPORT ROUTES
@@ -28,15 +28,14 @@ const footerRoutes = require('./src/routes/footerRoutes');
 const teamRoutes = require('./src/routes/teamRoutes');
 const datetimeRoutes = require('./src/routes/datetimeRoutes');
 const weatherRoutes = require('./src/routes/weatherRoutes');
-const commentRoutes = require('./src/routes/commentRoutes'); // ADDED
-const adminLogRoutes = require('./src/routes/adminLogRoutes'); // ADDED
-const visitRoutes = require('./src/routes/visitRoutes'); // ADDED
+const commentRoutes = require('./src/routes/commentRoutes');
+const adminLogRoutes = require('./src/routes/adminLogRoutes');
+const visitRoutes = require('./src/routes/visitRoutes');
 
 // ============================================
 // IMPORT UTILITIES
 // ============================================
 const { initializeDatabase } = require('./src/utils/dbInitializer');
-const { setupMiddleware } = require('./src/config/middleware');
 const { errorHandler } = require('./src/utils/errorHandler');
 const { successResponse } = require('./src/utils/responseHandler');
 
@@ -51,35 +50,30 @@ const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 // ============================================
 // SYNC DATABASE MODELS
 // ============================================
-// Sync Ad model
 Ad.sync({ alter: isDevelopment }).then(() => {
   console.log('✅ Ad model synced with database');
 }).catch(err => {
   console.error('❌ Error syncing Ad model:', err);
 });
 
-// Sync Team model
 Team.sync({ alter: isDevelopment }).then(() => {
   console.log('✅ Team model synced with database');
 }).catch(err => {
   console.error('❌ Error syncing Team model:', err);
 });
 
-// Sync Comment model
 Comment.sync({ alter: isDevelopment }).then(() => {
   console.log('✅ Comment model synced with database');
 }).catch(err => {
   console.error('❌ Error syncing Comment model:', err);
 });
 
-// Sync AdminLog model
 AdminLog.sync({ alter: isDevelopment }).then(() => {
   console.log('✅ AdminLog model synced with database');
 }).catch(err => {
   console.error('❌ Error syncing AdminLog model:', err);
 });
 
-// Sync VisitLog model
 VisitLog.sync({ alter: isDevelopment }).then(() => {
   console.log('✅ VisitLog model synced with database');
 }).catch(err => {
@@ -97,12 +91,54 @@ Object.keys(models).forEach(modelName => {
 });
 
 // ============================================
-// MIDDLEWARE SETUP
+// CORS MIDDLEWARE - MUST BE FIRST
 // ============================================
-setupMiddleware(app, { isDevelopment, FRONTEND_URL });
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow all origins in development
+  if (isDevelopment) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } 
+  // In production, allow specific origins
+  else {
+    const allowedOrigins = [
+      'https://khulasanepal.onrender.com',
+      'https://khulasanepalbackend.onrender.com',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    } else {
+      // For uploads, allow all origins
+      if (req.path.startsWith('/uploads')) {
+        res.setHeader('Access-Control-Allow-Origin', origin || '*');
+      } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      }
+    }
+  }
+  
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // ============================================
-// REQUEST LOGGING MIDDLEWARE (Debugging)
+// REQUEST LOGGING MIDDLEWARE
 // ============================================
 app.use((req, res, next) => {
   console.log(`📨 ${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -113,10 +149,11 @@ app.use((req, res, next) => {
 });
 
 // ============================================
-// STATIC FILES - UPLOADS (MUST COME BEFORE API ROUTES)
+// STATIC FILES - UPLOADS (FIXED FOR PRODUCTION)
 // ============================================
-// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
+
+// Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('📁 Created uploads directory');
@@ -132,66 +169,106 @@ subDirs.forEach(dir => {
   }
 });
 
-// Serve uploaded files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
-  maxAge: isDevelopment ? 0 : '7d',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, filePath) => {
-    // Security headers
-    res.set('X-Content-Type-Options', 'nosniff');
-    res.set('Content-Disposition', 'inline');
-    
-    // Set correct MIME types
-    const ext = path.extname(filePath).toLowerCase();
-    const mimeTypes = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-      '.bmp': 'image/bmp',
-      '.tiff': 'image/tiff',
-      '.ico': 'image/x-icon',
-      '.mp4': 'video/mp4',
-      '.mp3': 'audio/mpeg',
-      '.wav': 'audio/wav',
-      '.ogg': 'audio/ogg',
-      '.webm': 'video/webm',
-      '.pdf': 'application/pdf',
-      '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    };
-    
-    if (mimeTypes[ext]) {
-      res.set('Content-Type', mimeTypes[ext]);
+// ============================================
+// SERVE STATIC FILES WITH PROPER HEADERS
+// ============================================
+// Function to serve static files with proper headers
+const serveStaticWithHeaders = (dirPath, routePath) => {
+  app.use(routePath, (req, res, next) => {
+    // Set CORS headers for static files
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
     }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
     
-    // Cache control for production
-    if (!isDevelopment) {
-      res.set('Cache-Control', 'public, max-age=604800, immutable');
-    }
-    
-    // Log file serving in development
+    // Log file access in development
     if (isDevelopment) {
-      console.log(`📁 Serving file: ${filePath}`);
-      console.log(`   MIME Type: ${mimeTypes[ext] || 'unknown'}`);
+      console.log(`🖼️ Accessing: ${req.url}`);
+      const fullPath = path.join(dirPath, req.url);
+      console.log(`   Looking for: ${fullPath}`);
+      console.log(`   File exists: ${fs.existsSync(fullPath)}`);
     }
-  },
-}));
+    
+    next();
+  }, express.static(dirPath, {
+    maxAge: isDevelopment ? 0 : '7d',
+    etag: true,
+    lastModified: true,
+    index: false,
+    fallthrough: true,
+    setHeaders: (res, filePath) => {
+      // Set security headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      
+      // Set correct MIME types
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.bmp': 'image/bmp',
+        '.tiff': 'image/tiff',
+        '.ico': 'image/x-icon',
+        '.mp4': 'video/mp4',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ogg': 'audio/ogg',
+        '.webm': 'video/webm',
+        '.pdf': 'application/pdf',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.json': 'application/json',
+        '.txt': 'text/plain',
+        '.css': 'text/css',
+        '.js': 'application/javascript'
+      };
+      
+      if (mimeTypes[ext]) {
+        res.setHeader('Content-Type', mimeTypes[ext]);
+      }
+      
+      // Cache control for production
+      if (!isDevelopment) {
+        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      }
+    }
+  }));
+};
 
-// Debug middleware to log all uploads requests
-app.use('/uploads', (req, res, next) => {
-  console.log(`🖼️ Uploads request: ${req.url}`);
-  console.log(`   Full path: ${path.join(__dirname, 'uploads', req.url)}`);
-  next();
+// Serve the main uploads directory
+serveStaticWithHeaders(uploadsDir, '/uploads');
+
+// Also serve each subdirectory explicitly
+subDirs.forEach(subDir => {
+  const subDirPath = path.join(uploadsDir, subDir);
+  if (fs.existsSync(subDirPath)) {
+    serveStaticWithHeaders(subDirPath, `/uploads/${subDir}`);
+    console.log(`📁 Serving subdirectory: /uploads/${subDir}`);
+  }
 });
+
+// ============================================
+// MIDDLEWARE SETUP
+// ============================================
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================
 // API ROUTES
 // ============================================
-// IMPORTANT: API routes must come BEFORE static file serving
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/news', newsRoutes);
@@ -200,9 +277,9 @@ app.use('/api/team', teamRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/api/datetime', datetimeRoutes);
 app.use('/api/weather', weatherRoutes);
-app.use('/api/comments', commentRoutes); // ADDED - Comment routes
-app.use('/api/admin-logs', adminLogRoutes); // ADDED - Admin audit logs
-app.use('/api/visits', visitRoutes); // ADDED - Visit counter
+app.use('/api/comments', commentRoutes);
+app.use('/api/admin-logs', adminLogRoutes);
+app.use('/api/visits', visitRoutes);
 
 // Backward compatibility redirects for OLD API routes
 const legacyRoutes = ['society', 'local', 'sports', 'more'];
@@ -230,6 +307,10 @@ app.get('/api/health', async (req, res) => {
         subdirectories: subDirs.filter(dir => 
           fs.existsSync(path.join(uploadsDir, dir))
         )
+      },
+      cors: {
+        frontend: FRONTEND_URL,
+        backend: BACKEND_URL
       }
     });
   } catch (error) {
@@ -282,7 +363,6 @@ app.get('/api', (req, res) => {
 // ============================================
 // SERVE STATIC FILES FROM REACT BUILD
 // ============================================
-// Serve static files from the React build directory
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir, {
@@ -299,13 +379,11 @@ if (fs.existsSync(publicDir)) {
 // CATCH-ALL HANDLER FOR REACT ROUTER
 // ============================================
 app.use((req, res, next) => {
-  // Only serve index.html for non-API routes
   if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
     const indexPath = path.join(__dirname, 'public', 'index.html');
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
-      // If index.html doesn't exist, send a simple message
       res.status(200).send(`
         <!DOCTYPE html>
         <html>
@@ -315,6 +393,7 @@ app.use((req, res, next) => {
               body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
               h1 { color: #333; }
               .info { background: #f0f0f0; padding: 20px; border-radius: 5px; }
+              .endpoint { background: #e8f4f8; padding: 10px; margin: 5px 0; border-radius: 3px; }
             </style>
           </head>
           <body>
@@ -325,7 +404,16 @@ app.use((req, res, next) => {
               <p><strong>API Endpoint:</strong> <a href="/api">/api</a></p>
               <p><strong>Health Check:</strong> <a href="/api/health">/api/health</a></p>
               <p><strong>Uploads:</strong> <a href="/uploads">/uploads</a></p>
-              <p><strong>Frontend:</strong> Build React app and place in <code>public/</code> folder</p>
+              <p><strong>Frontend:</strong> ${FRONTEND_URL}</p>
+              <p><strong>Backend:</strong> ${BACKEND_URL}</p>
+            </div>
+            <h2>📁 Uploads Directory:</h2>
+            <div class="info">
+              ${subDirs.map(dir => {
+                const exists = fs.existsSync(path.join(uploadsDir, dir));
+                const files = exists ? fs.readdirSync(path.join(uploadsDir, dir)).filter(f => !f.startsWith('.')).length : 0;
+                return `<p><strong>/${dir}:</strong> ${exists ? `✅ ${files} files` : '❌ Not found'}</p>`;
+              }).join('')}
             </div>
           </body>
         </html>
@@ -363,10 +451,8 @@ app.use(errorHandler);
 // ============================================
 async function startServer() {
   try {
-    // Initialize database
     await initializeDatabase(db, { isDevelopment });
     
-    // Start listening
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log('\n' + '='.repeat(70));
       console.log('🚀 SERVER STARTED SUCCESSFULLY');
@@ -378,10 +464,7 @@ async function startServer() {
       console.log(`   Frontend URL:    ${FRONTEND_URL}`);
       console.log(`   Uploads Path:    ${uploadsDir}`);
       console.log(`\n🔒 Security:`);
-      console.log(`   Helmet:          ✅ Enabled`);
-      console.log(`   Compression:     ✅ Enabled`);
-      console.log(`   Rate Limiting:   ${isDevelopment ? '❌ Disabled (dev)' : '✅ Enabled'}`);
-      console.log(`   CORS:            ✅ Configured`);
+      console.log(`   CORS:            ✅ Fixed for production`);
       console.log(`\n📁 Static Files:`);
       console.log(`   Uploads:         ${BACKEND_URL}/uploads`);
       console.log(`   Public:          ${BACKEND_URL}/`);
@@ -402,8 +485,10 @@ async function startServer() {
       console.log(`   Comments:        POST ${BACKEND_URL}/api/comments/:commentId/like`);
       console.log(`\n📂 Upload Directories:`);
       subDirs.forEach(dir => {
-        const exists = fs.existsSync(path.join(uploadsDir, dir));
-        console.log(`   ${dir}: ${exists ? '✅' : '❌'} ${path.join(uploadsDir, dir)}`);
+        const dirPath = path.join(uploadsDir, dir);
+        const exists = fs.existsSync(dirPath);
+        const files = exists ? fs.readdirSync(dirPath).filter(f => !f.startsWith('.')).length : 0;
+        console.log(`   ${dir}: ${exists ? '✅' : '❌'} ${dirPath} ${exists ? `(${files} files)` : ''}`);
       });
       console.log('\n' + '='.repeat(70));
       console.log('✨ Ready to accept requests!\n');
@@ -429,24 +514,20 @@ async function startServer() {
         }
       });
 
-      // Force shutdown after timeout
       setTimeout(() => {
         console.error('⚠️  Forcing shutdown after timeout');
         process.exit(1);
       }, 10000);
     };
 
-    // Handle process signals
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
-    // Handle uncaught exceptions
     process.on('uncaughtException', (err) => {
       console.error('💥 Uncaught Exception:', err);
       gracefulShutdown('uncaughtException');
     });
 
-    // Handle unhandled rejections
     process.on('unhandledRejection', (reason, promise) => {
       console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
       gracefulShutdown('unhandledRejection');
