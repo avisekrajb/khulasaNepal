@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="970" height="120" viewBox="0 0 970 120">
+  <defs>
+    <linearGradient id="blockGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#831843"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f0f4ff"/>
+      <stop offset="100%" stop-color="#e8ecf8"/>
+    </linearGradient>
+  </defs>
+  <!-- Light background -->
+  <rect width="970" height="120" fill="url(#bgGrad)" rx="0"/>
+  <!-- Coloured left block -->
+  <rect width="272" height="120" fill="url(#blockGrad)"/>
+  <!-- Camera icon in block -->
+  <circle cx="136" cy="60" r="29" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="136" cy="60" r="24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <circle cx="136" cy="60" r="11" fill="rgba(255,255,255,0.5)"/>
+  <!-- Thin separator line -->
+  <line x1="272" y1="0" x2="272" y2="120" stroke="#ec4899" stroke-width="2" opacity="0.5"/>
+  <!-- Content area text -->
+  <text x="300" y="58" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#1a2540">LOCAL ART ARTICLE TOP</text>
+  <text x="300" y="86" font-family="Arial,sans-serif" font-size="16" fill="#6b7280">970 × 120 banner</text>
+  <!-- AD tag top-right -->
+  <rect x="922" y="0" width="48" height="38" fill="#ec4899" opacity="0.85"/>
+  <text x="946" y="26" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">AD</text>
+  <!-- Outer frame -->
+  <rect width="970" height="120" fill="none" stroke="#d1d5db" stroke-width="1.5" rx="0"/>
+</svg>

